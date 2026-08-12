@@ -46,7 +46,7 @@ const initMockData = () => {
   if (!localStorage.getItem('ventas')) {
     saveLocalData('ventas', [
       { id: 'FAC-1001', fecha: new Date(Date.now() - 3600000 * 2).toISOString(), items: [{ producto_id: 1, nombre: 'Galletas Chocochitas', cantidad: 2, precio: 600 }], total: 1200, metodo_pago: 'Efectivo', detalles_pago: { pagado: 2000, vuelto: 800 } },
-      { id: 'FAC-1002', fecha: new Date(Date.now() - 3600000).toISOString(), items: [{ producto_id: 5, nombre: 'Camiseta Visión Jesús Blanca M', cantidad: 1, precio: 5000 }], total: 5000, metodo_pago: 'Simple', detalles_pago: { comprobante: '99827162' } }
+      { id: 'FAC-1002', fecha: new Date(Date.now() - 3600000).toISOString(), items: [{ producto_id: 5, nombre: 'Camiseta Visión Jesús Blanca M', cantidad: 1, precio: 5000 }], total: 5000, metodo_pago: 'SINPE Móvil', detalles_pago: { comprobante: '99827162' } }
     ])
   }
 
