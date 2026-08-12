@@ -123,9 +123,7 @@ function App() {
 
           {/* Logo / Header */}
           <div className="flex flex-col items-center mb-8">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-sky-400 to-indigo-600 flex items-center justify-center shadow-xl shadow-indigo-500/10 mb-4">
-              <span className="font-extrabold text-white text-2xl">VJ</span>
-            </div>
+            <img src="/logo_oficial_transparente.png" className="w-16 h-16 object-contain mb-4" alt="Visión Jesús Logo" />
             <h1 className="text-xl font-bold text-white leading-tight">Visión Jesús</h1>
             <p className="text-xs text-sky-400 font-semibold tracking-wider uppercase mt-1">Ingreso al Sistema CRM</p>
           </div>
@@ -203,9 +201,7 @@ function App() {
           {/* Brand/Logo & Logged User Info */}
           <div className="p-6 border-b border-gray-800">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-400 to-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
-                <span className="font-extrabold text-white text-xl">VJ</span>
-              </div>
+              <img src="/logo_oficial_transparente.png" className="w-10 h-10 object-contain" alt="Visión Jesús Logo" />
               <div>
                 <h1 className="font-bold text-white text-lg leading-tight">Visión Jesús</h1>
                 <p className="text-xs text-sky-400 font-semibold tracking-wide uppercase">CRM Inventario</p>
