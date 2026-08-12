@@ -1,0 +1,4 @@
+Usuario: admin | Contraseña: admin123 (Rol: administrador)
+Usuario: cajero | Contraseña: tienda123 (Rol: facturador)
+Usuario: inventario | Contraseña: inventario123 (Rol: inventariado)
+Usuario: reportes | Contraseña: reportes123 (Rol: reportes)
