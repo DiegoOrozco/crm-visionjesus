@@ -27,7 +27,7 @@ import {
   Download
 } from 'lucide-react'
 import { db } from './db'
-import { Html5QrcodeScanner } from 'html5-qrcode'
+import { Html5QrcodeScanner, Html5QrcodeSupportedFormats } from 'html5-qrcode'
 
 function App() {
   // Restoration of active session from localStorage with expiration check (5 min)
@@ -451,17 +451,38 @@ function FacturacionTab({ productos, refreshStock, currentUser }) {
   useEffect(() => {
     let qrScanner = null
     if (isCameraActive) {
-      qrScanner = new Html5QrcodeScanner("reader", { 
-        fps: 10, 
-        qrbox: { width: 250, height: 250 } 
-      }, false)
+      const config = {
+        fps: 20, // Aumentado a 20 FPS para mayor fluidez de escaneo
+        qrbox: (viewfinderWidth, viewfinderHeight) => {
+          // Relación de aspecto rectangular ideal para códigos de barras horizontales 1D
+          const width = Math.floor(viewfinderWidth * 0.85)
+          const height = Math.floor(viewfinderHeight * 0.45)
+          return { width: Math.max(width, 220), height: Math.max(height, 120) }
+        },
+        aspectRatio: 1.333333,
+        formatsToSupport: [
+          Html5QrcodeSupportedFormats.EAN_13,
+          Html5QrcodeSupportedFormats.EAN_8,
+          Html5QrcodeSupportedFormats.CODE_128,
+          Html5QrcodeSupportedFormats.CODE_39,
+          Html5QrcodeSupportedFormats.UPC_A,
+          Html5QrcodeSupportedFormats.UPC_E,
+          Html5QrcodeSupportedFormats.ITF,
+          Html5QrcodeSupportedFormats.QR_CODE
+        ],
+        experimentalFeatures: {
+          useBarCodeDetectorIfSupported: true
+        }
+      }
+
+      qrScanner = new Html5QrcodeScanner("reader", config, /* verbose= */ false)
 
       qrScanner.render((decodedText) => {
         handleBarcodeScanned(decodedText)
         setIsCameraActive(false)
         qrScanner.clear()
       }, (err) => {
-        // Silent error
+        // Silent error per frame
       })
     }
 
