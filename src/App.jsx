@@ -30,8 +30,65 @@ import { db } from './db'
 import { Html5QrcodeScanner } from 'html5-qrcode'
 
 function App() {
-  const [currentUser, setCurrentUser] = useState(null)
-  const [activeTab, setActiveTab] = useState('facturar')
+  // Restoration of active session from localStorage with expiration check (5 min)
+  const SESSION_DURATION_MS = 5 * 60 * 1000 // 5 minutes
+
+  const saveSession = (user) => {
+    const sessionData = {
+      user,
+      expiresAt: Date.now() + SESSION_DURATION_MS
+    }
+    localStorage.setItem('crm_session', JSON.stringify(sessionData))
+  }
+
+  const getValidSession = () => {
+    try {
+      const stored = localStorage.getItem('crm_session')
+      if (!stored) return null
+      const { user, expiresAt } = JSON.parse(stored)
+      if (Date.now() > expiresAt) {
+        localStorage.removeItem('crm_session')
+        return null
+      }
+      return { user, expiresAt }
+    } catch {
+      localStorage.removeItem('crm_session')
+      return null
+    }
+  }
+
+  const [currentUser, setCurrentUser] = useState(() => {
+    const validSession = getValidSession()
+    return validSession ? validSession.user : null
+  })
+
+  // Timer to clear expired session automatically
+  useEffect(() => {
+    if (!currentUser) return
+
+    const checkExpiration = () => {
+      const session = getValidSession()
+      if (!session) {
+        setCurrentUser(null)
+      }
+    }
+
+    const interval = setInterval(checkExpiration, 10000) // check every 10 seconds
+    return () => clearInterval(interval)
+  }, [currentUser])
+
+  const [activeTab, setActiveTab] = useState(() => {
+    const validSession = getValidSession()
+    if (validSession) {
+      const perms = validSession.user.permisos || []
+      if (perms.includes('facturar')) return 'facturar'
+      if (perms.includes('productos') || perms.includes('stock')) return 'productos'
+      if (perms.includes('proveedores')) return 'proveedores'
+      if (perms.includes('reportes')) return 'reportes'
+      if (perms.includes('usuarios')) return 'usuarios'
+    }
+    return 'facturar'
+  })
   
   // App data states
   const [productos, setProductos] = useState([])
@@ -70,7 +127,9 @@ function App() {
   }
 
   useEffect(() => {
-    loadData()
+    if (currentUser) {
+      loadData()
+    }
   }, [currentUser])
 
   // Handle Login submission
@@ -82,6 +141,7 @@ function App() {
     try {
       const matchedUser = await db.login(loginUser.trim(), loginPass)
       if (matchedUser) {
+        saveSession(matchedUser)
         setCurrentUser(matchedUser)
         // Select first available tab matching permissions
         const perms = matchedUser.permisos || []
@@ -107,6 +167,7 @@ function App() {
   }
 
   const handleLogout = () => {
+    localStorage.removeItem('crm_session')
     setCurrentUser(null)
     setLoginUser('')
     setLoginPass('')
