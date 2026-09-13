@@ -978,6 +978,44 @@ function ProductosTab({ productos, proveedores, movimientos, refresh, currentUse
   const [proveedorId, setProveedorId] = useState('')
   const [barcodes, setBarcodes] = useState([])
   const [newBarcode, setNewBarcode] = useState('')
+  const [isModalCameraActive, setIsModalCameraActive] = useState(false)
+
+  // Camera scanner inside product add/edit modal
+  useEffect(() => {
+    let modalScanner = null
+    if (isModalCameraActive) {
+      const config = {
+        fps: 20,
+        qrbox: (w, h) => ({ width: Math.max(Math.floor(w * 0.85), 200), height: Math.max(Math.floor(h * 0.45), 100) }),
+        formatsToSupport: [
+          Html5QrcodeSupportedFormats.EAN_13,
+          Html5QrcodeSupportedFormats.EAN_8,
+          Html5QrcodeSupportedFormats.CODE_128,
+          Html5QrcodeSupportedFormats.CODE_39,
+          Html5QrcodeSupportedFormats.UPC_A,
+          Html5QrcodeSupportedFormats.UPC_E,
+          Html5QrcodeSupportedFormats.ITF,
+          Html5QrcodeSupportedFormats.QR_CODE
+        ],
+        experimentalFeatures: { useBarCodeDetectorIfSupported: true }
+      }
+
+      modalScanner = new Html5QrcodeScanner("modal-barcode-reader", config, false)
+      modalScanner.render((scannedCode) => {
+        if (scannedCode && !barcodes.includes(scannedCode)) {
+          setBarcodes(prev => [...prev, scannedCode])
+        }
+        setIsModalCameraActive(false)
+        modalScanner.clear()
+      }, () => {})
+    }
+
+    return () => {
+      if (modalScanner) {
+        modalScanner.clear().catch(e => console.error("Error clearing modal scanner", e))
+      }
+    }
+  }, [isModalCameraActive])
 
   const perms = currentUser.permisos || []
   const canModifyProducts = perms.includes('productos')
@@ -1433,7 +1471,26 @@ function ProductosTab({ productos, proveedores, movimientos, refresh, currentUse
               </div>
 
               <div className="bg-gray-950/60 p-4 rounded-xl border border-gray-900">
-                <label className="text-xs text-gray-400 block mb-1 font-semibold">Códigos de Barra Asociados</label>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="text-xs text-gray-400 font-semibold">Códigos de Barra Asociados</label>
+                  <button
+                    type="button"
+                    onClick={() => setIsModalCameraActive(!isModalCameraActive)}
+                    className="flex items-center gap-1 text-[11px] bg-sky-500/20 hover:bg-sky-500/30 text-sky-400 border border-sky-500/30 px-2 py-0.5 rounded-lg transition"
+                  >
+                    <Camera className="w-3.5 h-3.5" />
+                    {isModalCameraActive ? 'Cerrar Cámara' : 'Escanear con Cámara'}
+                  </button>
+                </div>
+
+                {/* Modal Camera Scanner UI */}
+                {isModalCameraActive && (
+                  <div className="mb-3 p-2 bg-gray-900 rounded-xl border border-sky-500/40 relative">
+                    <div id="modal-barcode-reader" className="overflow-hidden rounded-lg"></div>
+                    <p className="text-[10px] text-sky-400 text-center mt-1">Apunta la cámara al código de barras del producto</p>
+                  </div>
+                )}
+
                 <div className="flex gap-2 mb-3">
                   <input 
                     type="text"
@@ -1448,7 +1505,7 @@ function ProductosTab({ productos, proveedores, movimientos, refresh, currentUse
                         }
                       }
                     }}
-                    placeholder="Escanear o ingresar código..."
+                    placeholder="Escanear con lector USB o ingresar..."
                     className="flex-1 bg-gray-900 border border-gray-800 rounded-lg p-2 text-white text-xs"
                   />
                   <button 
